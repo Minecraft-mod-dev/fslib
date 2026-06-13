@@ -1,0 +1,11 @@
+name: FsLib
+version: '0.1.02'
+main: org.lin114514.fsplugin.fsLib.FsLib
+api-version: '1.21'
+depend: [Vault]
+
+commands:
+  fsi:
+    description: FsLib玩家加入后初始化命令
+    usage: /fsi
+    aliases: [fsi]
