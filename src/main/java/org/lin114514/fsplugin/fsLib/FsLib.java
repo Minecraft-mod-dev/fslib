@@ -115,7 +115,7 @@ public final class FsLib extends JavaPlugin implements Listener, CommandExecutor
                     .append("加入群组点我")
                     .color(ChatColor.BLUE)
                     .underlined(true)
-                    .event(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://chat.cqiming.com/invite/aPpqfdK8"))
+                    .event(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://chat.cqiming.com/invite/6j3SBlAy"))
                     .create();
 
             for (Player p : Bukkit.getOnlinePlayers()) {
