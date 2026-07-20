@@ -15,6 +15,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.milkbowl.vault.economy.Economy;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.ChatColor;
 
 public final class FsLib extends JavaPlugin implements Listener, CommandExecutor {
 
@@ -50,7 +54,8 @@ public final class FsLib extends JavaPlugin implements Listener, CommandExecutor
         getServer().getPluginManager().registerEvents(this, this);
         // 注册命令
         this.getCommand("fsi").setExecutor(this);
-
+        // 注册发送加入群组消息的命令
+        if (this.getCommand("sjgm") != null) this.getCommand("sjgm").setExecutor(this);
         getLogger().info("\u001B[33mVault绑定完成!\u001B[0m");
         for (String line : logo) {
             getLogger().info(line);
@@ -79,24 +84,47 @@ public final class FsLib extends JavaPlugin implements Listener, CommandExecutor
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!cmd.getName().equalsIgnoreCase("fsi")) return false;
+        String name = cmd.getName();
 
-        if (sender instanceof Player p) {
-            p.sendMessage("§6" + p.getName() + "你好!欢迎来到FutureServer!");
-            if (!p.hasPlayedBefore()) {
-                p.sendMessage("§b[新手系统]§r检测到你是第一次上线，奖励即将派发!");
-                p.getInventory().addItem(new ItemStack(Material.IRON_INGOT, 32));
-                p.getInventory().addItem(new ItemStack(Material.DIAMOND, 5));
-                p.getInventory().addItem(new ItemStack(Material.OAK_LOG, 16));
-                p.sendMessage("§b[新手系统]§r派发成功!");
+        if (name.equalsIgnoreCase("fsi")) {
+            if (sender instanceof Player p) {
+                p.sendMessage("§6" + p.getName() + "你好!欢迎来到FutureServer!");
+                if (!p.hasPlayedBefore()) {
+                    p.sendMessage("§b[新手系统]§r检测到你是第一次上线，奖励即将派发!");
+                    p.getInventory().addItem(new ItemStack(Material.IRON_INGOT, 32));
+                    p.getInventory().addItem(new ItemStack(Material.DIAMOND, 5));
+                    p.getInventory().addItem(new ItemStack(Material.OAK_LOG, 16));
+                    p.sendMessage("§b[新手系统]§r派发成功!");
+                }
+                return true;
+            } else if (sender instanceof ConsoleCommandSender) {
+                getLogger().info("fsLib插件已经就绪!");
+                return true;
+            } else {
+                // 其他发送者：返回 false，显示用法
+                return false;
             }
+        } else if (name.equalsIgnoreCase("sjgm")) {
+            // 发送加入群组的 tellraw 样式消息给所有在线玩家
+            if (Bukkit.getOnlinePlayers().isEmpty()) {
+                // 没有玩家在线，什么都不输出
+                return true;
+            }
+
+            BaseComponent[] message = new ComponentBuilder("欢迎来到FutureServer， ")
+                    .append("加入群组点我")
+                    .color(ChatColor.BLUE)
+                    .underlined(true)
+                    .event(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://chat.cqiming.com/invite/aPpqfdK8"))
+                    .create();
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                p.spigot().sendMessage(message);
+            }
+
             return true;
-        } else if (sender instanceof ConsoleCommandSender) {
-            getLogger().info("fsLib插件已经就绪!");
-            return true;
-        } else {
-            // 其他发送者：返回 false，显示用法
-            return false;
         }
+
+        return false;
     }
 }

@@ -9,3 +9,6 @@ commands:
     description: FsLib玩家加入后初始化命令
     usage: /fsi
     aliases: [fsi]
+  sjgm:
+    description: 发送加入玩家群组的消息
+    usage: /sjgm
