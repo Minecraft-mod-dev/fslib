@@ -10,7 +10,6 @@ public class sideBar {
 
     // 用来存储每个玩家的计分板
     private static final HashMap<UUID, FastBoard> boards = new HashMap<>();
-    // 如果 FastBoard 初始化失败，标记为不可用以避免重复报错
     private static boolean fastBoardAvailable = true;
 
     public static void updSideBar(Player p) {
