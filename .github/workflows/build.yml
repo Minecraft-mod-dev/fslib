@@ -41,8 +41,8 @@ jobs:
           tag_name: v${{ env.VERSION }}
           prerelease: true
           body: |
-            Auto release for v${{ env.VERSION }}
-            Commit: ${{ github.event.head_commit.message }}
+            This release is auto-generated.
+            ${{ github.event.head_commit.message }}
           # 此时目录下只剩最终 JAR，直接上传即可
           files: target/*.jar
         env:
