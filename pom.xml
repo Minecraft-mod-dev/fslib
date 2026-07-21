@@ -6,7 +6,7 @@
 
     <groupId>org.lin114514.fsplugin</groupId>
     <artifactId>fslib</artifactId>
-    <version>0.1.01</version>
+    <version>0.1.01 Release</version>
     <packaging>jar</packaging>
 
     <name>fslib</name>
