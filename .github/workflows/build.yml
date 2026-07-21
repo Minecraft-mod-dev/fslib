@@ -18,32 +18,55 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # 1. 提取版本号并写入环境变量
-      - name: Get Version from POM
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      # 关键步骤：提取版本号并判断是否为预发布
+      - name: Get Version and Check Pre-release
+        id: version_step
         run: |
+          # 1. 提取版本号
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Extracted version: $VERSION"
+          
+          # 2. 判断是否包含 Beta, Alpha, RC, SNAPSHOT 等预发布标识 (不区分大小写)
+          if echo "$VERSION" | grep -iqE "(beta|alpha|rc|snapshot|dev)"; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
+            echo "Detected pre-release version: $VERSION"
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
+            echo "Detected stable release version: $VERSION"
+          fi
 
       - name: Build with Maven
         run: mvn -B clean package
 
+      # 清理不需要的 original 文件
       - name: Remove Original JARs
         run: |
           rm -f target/original-*.jar
           rm -f target/*.jar.original
-          echo "Remaining files:"
-          ls target/*.jar
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.VERSION }}
-          prerelease: true
+          # 使用上一步判断的结果
+          prerelease: ${{ env.IS_PRERELEASE }}
           body: |
-            This release is auto-generated.
+            Auto release for v${{ env.VERSION }}
+            
+            &zwnj;**Type:**&zwnj; ${{ env.IS_PRERELEASE == 'true' && 'Pre-release' || 'Stable Release' }}
+            
+            &zwnj;**Commit Message:**&zwnj;
             ${{ github.event.head_commit.message }}
-          # 此时目录下只剩最终 JAR，直接上传即可
           files: target/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
