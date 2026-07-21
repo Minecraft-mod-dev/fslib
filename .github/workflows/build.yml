@@ -28,20 +28,22 @@ jobs:
       - name: Build with Maven
         run: mvn -B clean package
 
-      # 2. 使用环境变量创建 Release
+      - name: Remove Original JARs
+        run: |
+          rm -f target/original-*.jar
+          rm -f target/*.jar.original
+          echo "Remaining files:"
+          ls target/*.jar
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          # 注意：这里必须用 ${{ env.VERSION }}，且确保上一步已执行
           tag_name: v${{ env.VERSION }}
           prerelease: true
           body: |
             Auto release for v${{ env.VERSION }}
-            
             Commit: ${{ github.event.head_commit.message }}
-          files: |
-            target/*.jar
-            !target/original-*.jar
-            !target/*.jar.original
+          # 此时目录下只剩最终 JAR，直接上传即可
+          files: target/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
