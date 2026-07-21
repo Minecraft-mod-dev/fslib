@@ -3,41 +3,45 @@ name: Build Minecraft Plugin
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      # 1. 检出代码
       - uses: actions/checkout@v4
 
-      # 2. 设置 JDK 环境 (根据插件需求调整版本，如 17, 21)
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin' # 推荐使用 Temurin 或 Adoptium
+          distribution: 'temurin'
 
-      # 3. 缓存 Maven 依赖 (加速构建)
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+      # 1. 提取版本号并写入环境变量
+      - name: Get Version from POM
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
 
-      # 4. 执行构建
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B clean package
 
-      # 5. 上传构建产物 (Jar 文件)
-      - name: Upload Final Jar
-        uses: actions/upload-artifact@v4
+      # 2. 使用环境变量创建 Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          path: |
+          # 注意：这里必须用 ${{ env.VERSION }}，且确保上一步已执行
+          tag_name: v${{ env.VERSION }}
+          prerelease: true
+          body: |
+            Auto release for v${{ env.VERSION }}
+            
+            Commit: ${{ github.event.head_commit.message }}
+          files: |
             target/*.jar
-            !target/original-*.jar
-          compression-level: 0 
+            !target/*-original.jar
+            !target/*.jar.original
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
