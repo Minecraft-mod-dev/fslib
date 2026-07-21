@@ -34,10 +34,10 @@ jobs:
         run: mvn -B package --file pom.xml
 
       # 5. 上传构建产物 (Jar 文件)
-      - name: Upload Final Jar (Exclude Original)
+      - name: Upload Final Jar
         uses: actions/upload-artifact@v4
         with:
-          name: final-plugin-jar
           path: |
             target/*.jar
             !target/original-*.jar
+          compression-level: 0 
