@@ -41,7 +41,7 @@ jobs:
             Commit: ${{ github.event.head_commit.message }}
           files: |
             target/*.jar
-            !target/*-original.jar
+            !target/original-*.jar
             !target/*.jar.original
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
